@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import {
   getContent,
@@ -40,15 +40,28 @@ export const useBuilderContent = routeLoader$(async ({ url, error }) => {
 
 export default component$(() => {
   const builderContent = useBuilderContent();
+  const number = useSignal("0");
+
+  useVisibleTask$(() => {
+    number.value = "1";
+  });
 
   // RenderContent component uses `content` prop to render
   // the page, specified by the API Key, at the current URL path.
   return (
     <RenderContent
       model="page"
-      content={builderContent.value}
+      // content={builderContent.value}
+      content={{
+        ...builderContent.value,
+        data: {
+          ...builderContent.value?.data,
+          state: { ...builderContent.value?.data?.state, number: number.value },
+        },
+      }}
       apiKey={import.meta.env.PUBLIC_BUILDER_API_KEY}
       customComponents={CUSTOM_COMPONENTS}
+      // data={{ number: number.value }}
     />
   );
 });
